@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Home, Save, Trash2 } from "lucide-react";
+import { BookOpen, Home, Save, Trash2, Mic, MicOff, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
 
 type JournalEntry = {
   id: string;
@@ -22,12 +23,68 @@ const Journal = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     checkAuthAndLoadEntries();
+    initializeSpeechRecognition();
   }, []);
+
+  const initializeSpeechRecognition = () => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((result: any) => result[0].transcript)
+          .join('');
+        setContent(transcript);
+      };
+
+      recognitionRef.current.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        toast({
+          title: "Voice input error",
+          description: "Could not access microphone. Please check permissions.",
+          variant: "destructive",
+        });
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  };
+
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      toast({
+        title: "Not supported",
+        description: "Voice input is not supported in your browser.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+      toast({
+        title: "Listening...",
+        description: "Speak now to add to your journal entry.",
+      });
+    }
+  };
 
   const checkAuthAndLoadEntries = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -151,6 +208,46 @@ const Journal = () => {
     loadEntries();
   };
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    let yPosition = 20;
+
+    doc.setFontSize(20);
+    doc.text("My Journal Entries", 20, yPosition);
+    yPosition += 15;
+
+    entries.forEach((entry, index) => {
+      if (yPosition > 270) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.text(entry.title, 20, yPosition);
+      yPosition += 7;
+
+      doc.setFontSize(10);
+      doc.text(new Date(entry.created_at).toLocaleDateString(), 20, yPosition);
+      yPosition += 7;
+
+      if (entry.emotion) {
+        doc.text(`Emotion: ${entry.emotion}`, 20, yPosition);
+        yPosition += 7;
+      }
+
+      doc.setFontSize(11);
+      const lines = doc.splitTextToSize(entry.content, 170);
+      doc.text(lines, 20, yPosition);
+      yPosition += (lines.length * 7) + 10;
+    });
+
+    doc.save("my-journal.pdf");
+    toast({
+      title: "PDF exported",
+      description: "Your journal has been downloaded.",
+    });
+  };
+
   const emotionColor = (emotion: string | null) => {
     const colors: Record<string, string> = {
       sad: "bg-blue-500/20 text-blue-700 dark:text-blue-300",
@@ -177,10 +274,16 @@ const Journal = () => {
               <p className="text-sm text-muted-foreground">Express your thoughts and feelings</p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/")}>
-            <Home className="w-4 h-4 mr-2" />
-            Home
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={exportToPDF} disabled={entries.length === 0}>
+              <Download className="w-4 h-4 mr-2" />
+              Export PDF
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/")}>
+              <Home className="w-4 h-4 mr-2" />
+              Home
+            </Button>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
@@ -196,12 +299,24 @@ const Journal = () => {
                 className="border-primary/20 focus:border-primary"
               />
               
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your thoughts here..."
-                className="min-h-[300px] resize-none border-primary/20 focus:border-primary"
-              />
+              <div className="relative">
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Write your thoughts here... or use voice input"
+                  className="min-h-[300px] resize-none border-primary/20 focus:border-primary pr-12"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleVoiceInput}
+                  className={`absolute right-2 top-2 ${isListening ? 'text-destructive animate-pulse' : 'text-muted-foreground'}`}
+                  title={isListening ? "Stop listening" : "Start voice input"}
+                >
+                  {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                </Button>
+              </div>
               
               <Button
                 onClick={saveEntry}

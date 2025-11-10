@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, BookOpen, Activity, ShieldCheck } from "lucide-react";
+import { Heart, MessageCircle, BookOpen, Activity, ShieldCheck, Wind, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import MindfulnessPrompts from "@/components/MindfulnessPrompts";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ const Index = () => {
             Tools for Your Wellbeing
           </h2>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             <FeatureCard
               icon={<MessageCircle className="w-8 h-8" />}
               title="Empathetic Chat"
@@ -78,7 +79,23 @@ const Index = () => {
               description="Visualize your emotional patterns and celebrate your progress over time."
               onClick={() => navigate('/mood')}
             />
+
+            <FeatureCard
+              icon={<Wind className="w-8 h-8" />}
+              title="Breathing Exercises"
+              description="Guided breathing techniques to help you relax and find your center."
+              onClick={() => navigate('/breathe')}
+            />
+
+            <FeatureCard
+              icon={<Phone className="w-8 h-8" />}
+              title="Crisis Resources"
+              description="Access helplines and professional support information when you need it."
+              onClick={() => navigate('/resources')}
+            />
           </div>
+
+          <MindfulnessPrompts />
         </div>
       </section>
 

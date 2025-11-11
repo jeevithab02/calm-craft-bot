@@ -8,51 +8,57 @@ const Resources = () => {
 
   const helplines = [
     {
-      name: "988 Suicide & Crisis Lifeline",
-      number: "988",
-      description: "24/7 free and confidential support for people in distress",
+      name: "Vandrevala Foundation",
+      number: "1860 2662 345 or 1800 2333 330",
+      description: "24/7 free mental health support and crisis helpline",
       icon: Phone,
     },
     {
-      name: "Crisis Text Line",
-      number: "Text HOME to 741741",
-      description: "Free, 24/7 crisis support via text message",
+      name: "AASRA",
+      number: "91-9820466726",
+      description: "24/7 crisis support for people in emotional distress",
+      icon: Heart,
+    },
+    {
+      name: "iCall Helpline",
+      number: "91-22-25521111",
+      description: "Psychosocial helpline (Mon-Sat, 8 AM - 10 PM)",
+      icon: Phone,
+    },
+    {
+      name: "Snehi Foundation",
+      number: "91-22-27546669",
+      description: "Emotional support for crisis and suicide prevention",
       icon: MessageCircle,
     },
     {
-      name: "SAMHSA National Helpline",
-      number: "1-800-662-4357",
-      description: "Treatment referral and information service",
-      icon: Phone,
-    },
-    {
-      name: "NAMI Helpline",
-      number: "1-800-950-6264",
-      description: "Mental health information and support",
+      name: "NIMHANS",
+      number: "080-46110007",
+      description: "Mental health support from India's premier institute",
       icon: Heart,
     },
   ];
 
   const onlineResources = [
     {
-      name: "MentalHealth.gov",
-      url: "https://www.mentalhealth.gov",
-      description: "Information on mental health and where to get help",
+      name: "NIMHANS (National Institute of Mental Health)",
+      url: "https://nimhans.ac.in",
+      description: "Premier institute for mental health and neurosciences in India",
     },
     {
-      name: "NAMI (National Alliance on Mental Illness)",
-      url: "https://www.nami.org",
-      description: "Advocacy, education, support and public awareness",
+      name: "Mind.org.in",
+      url: "https://www.mind.org.in",
+      description: "Mental health resources and awareness in India",
     },
     {
-      name: "Mental Health America",
-      url: "https://www.mhanational.org",
-      description: "Tools and resources for mental wellness",
+      name: "The Live Love Laugh Foundation",
+      url: "https://www.thelivelovelaughfoundation.org",
+      description: "Mental health awareness and resources",
     },
     {
-      name: "Therapy for Black Girls",
-      url: "https://therapyforblackgirls.com",
-      description: "Mental health resources for Black women and girls",
+      name: "MPower (Mpower Centre)",
+      url: "https://mpowerminds.com",
+      description: "Mental health services and support",
     },
   ];
 
@@ -76,7 +82,7 @@ const Resources = () => {
             Emergency
           </h2>
           <p className="text-muted-foreground mb-2">
-            If you're in immediate danger or having thoughts of harming yourself or others, call 911 or go to your nearest emergency room.
+            If you're in immediate danger or having thoughts of harming yourself or others, call 112 (Emergency Services) or go to your nearest emergency room.
           </p>
         </div>
 

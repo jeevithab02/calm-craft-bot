@@ -51,6 +51,10 @@ export default {
         calm: "hsl(var(--calm))",
         peaceful: "hsl(var(--peaceful))",
         serene: "hsl(var(--serene))",
+        lavender: "hsl(var(--lavender))",
+        peach: "hsl(var(--peach))",
+        mint: "hsl(var(--mint))",
+        rose: "hsl(var(--rose))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

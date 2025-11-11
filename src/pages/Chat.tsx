@@ -6,6 +6,8 @@ import { Send, Heart, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useStreak } from "@/hooks/useStreak";
+import { useTreasureBox } from "@/hooks/useTreasureBox";
 
 type Message = {
   role: "user" | "assistant";
@@ -21,6 +23,8 @@ const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { updateStreak } = useStreak();
+  const { recordTask } = useTreasureBox();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -102,7 +106,7 @@ const Chat = () => {
         emotion: data.emotion,
       });
 
-      // Track mood
+      // Track mood and create polaroid
       if (data.emotion && data.emotion !== "neutral") {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
@@ -112,8 +116,25 @@ const Chat = () => {
             intensity: 5,
             notes: input.substring(0, 100),
           });
+
+          // Create polaroid
+          const emotionEmojis: Record<string, string> = {
+            happy: "😊", sad: "😢", anxious: "😰", angry: "😠",
+            calm: "😌", stressed: "😓", neutral: "😐",
+          };
+          
+          await supabase.from("mood_polaroids").insert({
+            user_id: user.id,
+            emotion: data.emotion,
+            note: input.substring(0, 100),
+            emoji: emotionEmojis[data.emotion] || "😐",
+          });
         }
       }
+
+      // Update streak and record task
+      await updateStreak();
+      await recordTask("chat");
     } catch (error) {
       console.error("Error sending message:", error);
       toast({

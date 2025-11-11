@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
+import { useStreak } from "@/hooks/useStreak";
+import { useTreasureBox } from "@/hooks/useTreasureBox";
 
 type JournalEntry = {
   id: string;
@@ -27,6 +29,8 @@ const Journal = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const recognitionRef = useRef<any>(null);
+  const { updateStreak } = useStreak();
+  const { recordTask } = useTreasureBox();
 
   useEffect(() => {
     checkAuthAndLoadEntries();
@@ -156,13 +160,30 @@ const Journal = () => {
 
       if (error) throw error;
 
-      // Track mood
+      // Track mood and create polaroid
       await supabase.from("mood_tracking").insert({
         user_id: user.id,
         emotion,
         intensity: 5,
         notes: "From journal entry",
       });
+
+      // Create polaroid
+      const emotionEmojis: Record<string, string> = {
+        happy: "😊", sad: "😢", anxious: "😰", angry: "😠",
+        calm: "😌", stressed: "😓", neutral: "😐",
+      };
+      
+      await supabase.from("mood_polaroids").insert({
+        user_id: user.id,
+        emotion,
+        note: content.substring(0, 100),
+        emoji: emotionEmojis[emotion] || "😐",
+      });
+
+      // Update streak and record task
+      await updateStreak();
+      await recordTask("journal");
 
       toast({
         title: "Entry saved",

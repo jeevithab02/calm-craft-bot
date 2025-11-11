@@ -10,6 +10,9 @@ import Mood from "./pages/Mood";
 import Auth from "./pages/Auth";
 import Breathe from "./pages/Breathe";
 import Resources from "./pages/Resources";
+import MoodMemories from "./pages/MoodMemories";
+import TreasuresVault from "./pages/TreasuresVault";
+import EmotionVault from "./pages/EmotionVault";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +30,9 @@ const App = () => (
           <Route path="/mood" element={<Mood />} />
           <Route path="/breathe" element={<Breathe />} />
           <Route path="/resources" element={<Resources />} />
+          <Route path="/mood-memories" element={<MoodMemories />} />
+          <Route path="/treasures" element={<TreasuresVault />} />
+          <Route path="/emotion-vault" element={<EmotionVault />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

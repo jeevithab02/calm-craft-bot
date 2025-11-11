@@ -73,6 +73,30 @@ export type Database = {
         }
         Relationships: []
       }
+      collectibles: {
+        Row: {
+          content: Json
+          id: string
+          type: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          content: Json
+          id?: string
+          type: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: Json
+          id?: string
+          type?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           content: string
@@ -106,6 +130,33 @@ export type Database = {
         }
         Relationships: []
       }
+      mood_polaroids: {
+        Row: {
+          created_at: string
+          emoji: string
+          emotion: string
+          id: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          emotion: string
+          id?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          emotion?: string
+          id?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       mood_tracking: {
         Row: {
           created_at: string
@@ -130,6 +181,81 @@ export type Database = {
           intensity?: number | null
           notes?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      streak_rewards: {
+        Row: {
+          content: Json
+          id: string
+          reward_type: string
+          streak_day: number
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          content: Json
+          id?: string
+          reward_type: string
+          streak_day: number
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: Json
+          id?: string
+          reward_type?: string
+          streak_day?: number
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_streaks: {
+        Row: {
+          current_streak: number
+          id: string
+          last_check_in: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          id?: string
+          last_check_in?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          id?: string
+          last_check_in?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_tasks: {
+        Row: {
+          completed_at: string
+          id: string
+          task_type: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          task_type: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          task_type?: string
+          user_id?: string
         }
         Relationships: []
       }

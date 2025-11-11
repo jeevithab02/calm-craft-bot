@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Activity, Home, Smile, Frown, Meh, Heart } from "lucide-react";
+import { Activity, Home, Smile, Frown, Meh, Heart, Image } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useStreak } from "@/hooks/useStreak";
+import { useTreasureBox } from "@/hooks/useTreasureBox";
+import { TreasureBox } from "@/components/TreasureBox";
+import { useState as useStateHook } from "react";
 
 type MoodData = {
   emotion: string;
@@ -14,8 +18,10 @@ type MoodData = {
 const Mood = () => {
   const [moodData, setMoodData] = useState<MoodData[]>([]);
   const [recentMoods, setRecentMoods] = useState<any[]>([]);
+  const [treasureContent, setTreasureContent] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { canUnlock, unlockTreasureBox } = useTreasureBox();
 
   useEffect(() => {
     checkAuthAndLoadData();
@@ -98,6 +104,11 @@ const Mood = () => {
     return colors[emotion] || colors.neutral;
   };
 
+  const handleUnlockTreasure = async () => {
+    const content = await unlockTreasureBox();
+    setTreasureContent(content);
+  };
+
   const totalMoods = moodData.reduce((sum, item) => sum + item.count, 0);
 
   return (
@@ -113,10 +124,25 @@ const Mood = () => {
               <p className="text-sm text-muted-foreground">Visualize your emotional journey</p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/")}>
-            <Home className="w-4 h-4 mr-2" />
-            Home
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/mood-memories")}>
+              <Image className="w-4 h-4 mr-2" />
+              Mood Memories
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/")}>
+              <Home className="w-4 h-4 mr-2" />
+              Home
+            </Button>
+          </div>
+        </div>
+
+        {/* Treasure Box */}
+        <div className="mb-8">
+          <TreasureBox
+            canUnlock={canUnlock}
+            onUnlock={handleUnlockTreasure}
+            content={treasureContent}
+          />
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">

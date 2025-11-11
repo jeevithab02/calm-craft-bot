@@ -1,16 +1,25 @@
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, BookOpen, Activity, ShieldCheck, Wind, Phone } from "lucide-react";
+import { Heart, MessageCircle, BookOpen, Activity, ShieldCheck, Wind, Phone, Image, Box, Award, Flame } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MindfulnessPrompts from "@/components/MindfulnessPrompts";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { StreakDisplay } from "@/components/StreakDisplay";
+import { useStreak } from "@/hooks/useStreak";
+import { useEffect } from "react";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { current_streak, longest_streak } = useStreak();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-calm to-peaceful">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
+        
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
         
         <div className="container mx-auto px-4 py-20 relative">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
@@ -93,7 +102,34 @@ const Index = () => {
               description="Access helplines and professional support information when you need it."
               onClick={() => navigate('/resources')}
             />
+
+            <FeatureCard
+              icon={<Image className="w-8 h-8" />}
+              title="Mood Memories"
+              description="Create and view emotional polaroid cards from your mood check-ins."
+              onClick={() => navigate('/mood-memories')}
+            />
+
+            <FeatureCard
+              icon={<Box className="w-8 h-8" />}
+              title="Treasures Vault"
+              description="Unlock weekly treasure boxes and collect special digital rewards."
+              onClick={() => navigate('/treasures')}
+            />
+
+            <FeatureCard
+              icon={<Award className="w-8 h-8" />}
+              title="Emotion Vault"
+              description="View your streak milestone rewards and achievements."
+              onClick={() => navigate('/emotion-vault')}
+            />
           </div>
+
+          {current_streak > 0 && (
+            <div className="mb-8">
+              <StreakDisplay currentStreak={current_streak} longestStreak={longest_streak} />
+            </div>
+          )}
 
           <MindfulnessPrompts />
         </div>

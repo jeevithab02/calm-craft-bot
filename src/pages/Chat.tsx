@@ -47,24 +47,55 @@ const Chat = () => {
       return;
     }
 
-    // Create a new chat session
-    const { data, error } = await supabase
+    // Try to get the most recent session
+    const { data: sessions, error: sessionsError } = await supabase
       .from("chat_sessions")
-      .insert({ user_id: user.id, title: "New Conversation" })
-      .select()
-      .single();
+      .select("*")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false })
+      .limit(1);
 
-    if (error) {
-      console.error("Error creating session:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create chat session",
-        variant: "destructive",
-      });
-      return;
+    let currentSession;
+
+    if (sessionsError || !sessions || sessions.length === 0) {
+      // Create a new chat session
+      const { data, error } = await supabase
+        .from("chat_sessions")
+        .insert({ user_id: user.id, title: "New Conversation" })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating session:", error);
+        toast({
+          title: "Error",
+          description: "Failed to create chat session",
+          variant: "destructive",
+        });
+        return;
+      }
+      currentSession = data;
+    } else {
+      currentSession = sessions[0];
     }
 
-    setSessionId(data.id);
+    setSessionId(currentSession.id);
+
+    // Load existing messages from this session
+    const { data: existingMessages, error: messagesError } = await supabase
+      .from("chat_messages")
+      .select("*")
+      .eq("session_id", currentSession.id)
+      .order("created_at", { ascending: true });
+
+    if (!messagesError && existingMessages) {
+      const loadedMessages: Message[] = existingMessages.map(msg => ({
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+        emotion: msg.emotion || undefined,
+      }));
+      setMessages(loadedMessages);
+    }
   };
 
   const sendMessage = async () => {

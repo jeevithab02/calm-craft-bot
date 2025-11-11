@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { Activity, Home, Smile, Frown, Meh, Heart, Image } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
 import { useTreasureBox } from "@/hooks/useTreasureBox";
 import { TreasureBox } from "@/components/TreasureBox";
-import { useState as useStateHook } from "react";
 
 type MoodData = {
   emotion: string;
@@ -19,9 +19,14 @@ const Mood = () => {
   const [moodData, setMoodData] = useState<MoodData[]>([]);
   const [recentMoods, setRecentMoods] = useState<any[]>([]);
   const [treasureContent, setTreasureContent] = useState<any>(null);
+  const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
+  const [intensity, setIntensity] = useState(5);
+  const [notes, setNotes] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
   const { canUnlock, unlockTreasureBox } = useTreasureBox();
+  const { updateStreak } = useStreak();
+  const { recordTask } = useTreasureBox();
 
   useEffect(() => {
     checkAuthAndLoadData();
@@ -109,6 +114,73 @@ const Mood = () => {
     setTreasureContent(content);
   };
 
+  const handleSubmitMood = async () => {
+    if (!selectedEmotion) {
+      toast({
+        title: "Please select an emotion",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    try {
+      // Save mood tracking
+      await supabase.from("mood_tracking").insert({
+        user_id: user.id,
+        emotion: selectedEmotion,
+        intensity,
+        notes: notes.trim() || null,
+      });
+
+      // Create polaroid
+      const emotionEmojis: Record<string, string> = {
+        happy: "😊", sad: "😢", anxious: "😰", angry: "😠",
+        calm: "😌", stressed: "😓", neutral: "😐",
+      };
+      
+      await supabase.from("mood_polaroids").insert({
+        user_id: user.id,
+        emotion: selectedEmotion,
+        note: notes.trim() || `Intensity: ${intensity}/10`,
+        emoji: emotionEmojis[selectedEmotion] || "😐",
+      });
+
+      // Update streak and record task
+      await updateStreak();
+      await recordTask("mood");
+
+      toast({
+        title: "Mood tracked!",
+        description: "Your mood has been recorded successfully.",
+      });
+
+      setSelectedEmotion(null);
+      setIntensity(5);
+      setNotes("");
+      loadMoodData();
+    } catch (error) {
+      console.error("Error saving mood:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save mood. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const emotions = [
+    { name: "happy", emoji: "😊", color: "from-green-400 to-green-600" },
+    { name: "sad", emoji: "😢", color: "from-blue-400 to-blue-600" },
+    { name: "anxious", emoji: "😰", color: "from-yellow-400 to-yellow-600" },
+    { name: "angry", emoji: "😠", color: "from-red-400 to-red-600" },
+    { name: "calm", emoji: "😌", color: "from-primary to-serene" },
+    { name: "stressed", emoji: "😓", color: "from-orange-400 to-orange-600" },
+    { name: "neutral", emoji: "😐", color: "from-muted to-muted-foreground" },
+  ];
+
   const totalMoods = moodData.reduce((sum, item) => sum + item.count, 0);
 
   return (
@@ -135,6 +207,72 @@ const Mood = () => {
             </Button>
           </div>
         </div>
+
+        {/* Manual Mood Entry */}
+        <Card className="mb-8 p-6 border-primary/20 shadow-soft">
+          <h2 className="text-xl font-semibold mb-6 text-foreground">How are you feeling?</h2>
+          
+          <div className="space-y-6">
+            <div className="grid grid-cols-4 md:grid-cols-7 gap-3">
+              {emotions.map((emotion) => (
+                <button
+                  key={emotion.name}
+                  onClick={() => setSelectedEmotion(emotion.name)}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all hover:scale-105 ${
+                    selectedEmotion === emotion.name
+                      ? `bg-gradient-to-br ${emotion.color} shadow-glow`
+                      : "bg-card border border-border hover:border-primary/30"
+                  }`}
+                >
+                  <span className="text-3xl">{emotion.emoji}</span>
+                  <span className={`text-xs capitalize ${
+                    selectedEmotion === emotion.name ? "text-white font-medium" : "text-muted-foreground"
+                  }`}>
+                    {emotion.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {selectedEmotion && (
+              <div className="space-y-4 animate-fade-in">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Intensity: {intensity}/10
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    value={intensity}
+                    onChange={(e) => setIntensity(Number(e.target.value))}
+                    className="w-full accent-primary"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Notes (optional)
+                  </label>
+                  <Textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="What's on your mind?"
+                    className="min-h-[100px] resize-none border-primary/20 focus:border-primary"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleSubmitMood}
+                  className="w-full bg-gradient-to-r from-primary to-serene hover:shadow-glow"
+                  size="lg"
+                >
+                  Save Mood
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
 
         {/* Treasure Box */}
         <div className="mb-8">

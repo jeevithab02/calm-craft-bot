@@ -97,6 +97,36 @@ export type Database = {
         }
         Relationships: []
       }
+      emotion_logs: {
+        Row: {
+          confidence: number
+          created_at: string
+          emotion: string
+          id: string
+          image_url: string | null
+          source: string
+          user_id: string
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          emotion: string
+          id?: string
+          image_url?: string | null
+          source: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          emotion?: string
+          id?: string
+          image_url?: string | null
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           content: string

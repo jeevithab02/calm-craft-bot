@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
 import { useTreasureBox } from "@/hooks/useTreasureBox";
+import VoiceControls from "@/components/VoiceControls";
+import PhotoEmotionDetector from "@/components/PhotoEmotionDetector";
 
 type Message = {
   role: "user" | "assistant";
@@ -20,6 +22,8 @@ const Chat = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [lastAssistantMessage, setLastAssistantMessage] = useState<string>("");
+  const [detectedEmotion, setDetectedEmotion] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -128,6 +132,7 @@ const Chat = () => {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+      setLastAssistantMessage(data.message);
 
       // Save assistant message to database
       await supabase.from("chat_messages").insert({
@@ -190,6 +195,28 @@ const Chat = () => {
     return colors[emotion || ""] || "text-muted-foreground";
   };
 
+  const handleVoiceTranscript = (text: string) => {
+    setInput(text);
+  };
+
+  const handleEmotionDetected = (emotion: string, confidence: number) => {
+    setDetectedEmotion(emotion);
+    // Add empathetic context to next message
+    const empathyMap: Record<string, string> = {
+      stressed: "It seems you're feeling stressed. I'm here to help you find calm.",
+      anxious: "You appear anxious. Let's work through this together with some grounding techniques.",
+      sad: "I notice you might be feeling down. I'm here to listen and support you.",
+      angry: "I sense some frustration. Let's talk about what's bothering you.",
+      happy: "It's wonderful to see you're in good spirits!",
+    };
+    
+    const empathyMessage = empathyMap[emotion] || "I'm here for you.";
+    toast({
+      title: "I understand",
+      description: empathyMessage,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-calm to-peaceful">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -209,8 +236,10 @@ const Chat = () => {
           </Button>
         </div>
 
-        <Card className="mb-4 p-6 border-primary/20 shadow-soft">
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+        <div className="grid md:grid-cols-3 gap-4 mb-4">
+          <div className="md:col-span-2">
+            <Card className="p-6 border-primary/20 shadow-soft">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
             {messages.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <Heart className="w-12 h-12 mx-auto mb-4 text-primary opacity-50" />
@@ -254,11 +283,11 @@ const Chat = () => {
               </div>
             )}
 
-            <div ref={messagesEndRef} />
-          </div>
-        </Card>
+                <div ref={messagesEndRef} />
+              </div>
+            </Card>
 
-        <div className="flex gap-2">
+            <div className="flex gap-2 mt-4">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -272,19 +301,29 @@ const Chat = () => {
             className="min-h-[80px] resize-none border-primary/20 focus:border-primary"
             disabled={isLoading}
           />
-          <Button
-            onClick={sendMessage}
-            disabled={isLoading || !input.trim()}
-            className="bg-gradient-to-r from-primary to-serene hover:shadow-glow"
-            size="lg"
-          >
-            <Send className="w-5 h-5" />
-          </Button>
-        </div>
+              <VoiceControls 
+                onTranscript={handleVoiceTranscript}
+                textToSpeak={lastAssistantMessage}
+              />
+              <Button
+                onClick={sendMessage}
+                disabled={isLoading || !input.trim()}
+                className="bg-gradient-to-r from-primary to-serene hover:shadow-glow"
+                size="lg"
+              >
+                <Send className="w-5 h-5" />
+              </Button>
+            </div>
 
-        <p className="text-xs text-muted-foreground text-center mt-4">
-          This is not a substitute for professional mental health care. In crisis, please contact a professional.
-        </p>
+            <p className="text-xs text-muted-foreground text-center mt-4">
+              This is not a substitute for professional mental health care. In crisis, please contact a professional.
+            </p>
+          </div>
+          
+          <div>
+            <PhotoEmotionDetector onEmotionDetected={handleEmotionDetected} />
+          </div>
+        </div>
       </div>
     </div>
   );

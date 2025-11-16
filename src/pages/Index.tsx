@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, BookOpen, Activity, ShieldCheck, Wind, Phone, Image, Box, Award, Flame } from "lucide-react";
+import { Heart, MessageCircle, BookOpen, Activity, ShieldCheck, Wind, Phone, Image, Box, Award, Flame, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MindfulnessPrompts from "@/components/MindfulnessPrompts";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -122,6 +122,13 @@ const Index = () => {
               title="Emotion Vault"
               description="View your streak milestone rewards and achievements."
               onClick={() => navigate('/emotion-vault')}
+            />
+
+            <FeatureCard
+              icon={<Camera className="w-8 h-8" />}
+              title="Emotion History"
+              description="Track emotions detected from your photos and selfies."
+              onClick={() => navigate('/emotion-history')}
             />
           </div>
 

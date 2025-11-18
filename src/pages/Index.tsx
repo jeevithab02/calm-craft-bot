@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, BookOpen, Activity, ShieldCheck, Wind, Phone, Image, Box, Award, Flame, Camera } from "lucide-react";
+import { Heart, MessageCircle, BookOpen, Activity, ShieldCheck, Wind, Phone, Image, Box, Award, Flame, Camera, Mic } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MindfulnessPrompts from "@/components/MindfulnessPrompts";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -111,24 +111,31 @@ const Index = () => {
             />
 
             <FeatureCard
-              icon={<Box className="w-8 h-8" />}
-              title="Treasures Vault"
-              description="Unlock weekly treasure boxes and collect special digital rewards."
-              onClick={() => navigate('/treasures')}
-            />
-
-            <FeatureCard
-              icon={<Award className="w-8 h-8" />}
-              title="Emotion Vault"
-              description="View your streak milestone rewards and achievements."
-              onClick={() => navigate('/emotion-vault')}
-            />
-
-            <FeatureCard
               icon={<Camera className="w-8 h-8" />}
+              title="Detect Emotion"
+              description="Capture or upload a photo to detect your emotion and start an empathetic conversation."
+              onClick={() => navigate('/emotion-detect')}
+            />
+            
+            <FeatureCard
+              icon={<Mic className="w-8 h-8" />}
+              title="Voice Chat"
+              description="Talk naturally with AI using voice - no typing needed. Short, supportive responses."
+              onClick={() => navigate('/voice-chat')}
+            />
+
+            <FeatureCard
+              icon={<Image className="w-8 h-8" />}
               title="Emotion History"
-              description="Track emotions detected from your photos and selfies."
+              description="View your emotion detection history in beautiful Polaroid-style cards."
               onClick={() => navigate('/emotion-history')}
+            />
+            
+            <FeatureCard
+              icon={<Box className="w-8 h-8" />}
+              title="Treasure Box"
+              description="Unlock collectibles and rewards as you maintain your streak and engage with the app."
+              onClick={() => navigate('/treasures')}
             />
           </div>
 

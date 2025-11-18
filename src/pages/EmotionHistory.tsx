@@ -100,6 +100,10 @@ const EmotionHistory = () => {
     neutral: "from-gray-400/20 to-gray-600/20",
   };
 
+  const isPositiveEmotion = (emotion: string) => {
+    return ["happy", "surprised"].includes(emotion);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-calm to-peaceful">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -123,40 +127,38 @@ const EmotionHistory = () => {
             </p>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {logs.map((log) => (
-              <Card
+              <div
                 key={log.id}
-                className={`p-6 bg-gradient-to-br ${emotionColors[log.emotion]} border-border/50 hover:shadow-lg transition-shadow`}
+                className="relative bg-white dark:bg-card p-4 pb-8 shadow-lg hover:shadow-xl transition-all duration-300 rotate-1 hover:rotate-0 border-8 border-white dark:border-card animate-fade-in"
+                style={{
+                  transform: `rotate(${Math.random() * 6 - 3}deg)`,
+                }}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4 flex-1">
-                    <div className="text-4xl">{emotionEmojis[log.emotion]}</div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold capitalize mb-1">
-                        {log.emotion}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Confidence: {Math.round(log.confidence * 100)}%
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Source: {log.source === 'photo_upload' ? 'Photo Upload' : 'Camera Capture'}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(log.created_at), "PPpp")}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteLog(log.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                <div className="bg-muted rounded-lg h-48 flex items-center justify-center mb-4 overflow-hidden">
+                  <div className="text-8xl">{emotionEmojis[log.emotion]}</div>
                 </div>
-              </Card>
+                <div className="space-y-2">
+                  <h3 className="font-handwriting text-2xl capitalize text-center text-foreground">
+                    {log.emotion}
+                  </h3>
+                  <p className="text-sm text-muted-foreground text-center">
+                    {Math.round(log.confidence * 100)}% confident
+                  </p>
+                  <p className="text-xs text-muted-foreground text-center">
+                    {format(new Date(log.created_at), "PP")}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => deleteLog(log.id)}
+                  className="absolute top-2 right-2 text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             ))}
           </div>
         )}

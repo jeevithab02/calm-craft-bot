@@ -3,13 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Send, Heart, Home } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
 import { useTreasureBox } from "@/hooks/useTreasureBox";
 import VoiceControls from "@/components/VoiceControls";
-import PhotoEmotionDetector from "@/components/PhotoEmotionDetector";
 
 type Message = {
   role: "user" | "assistant";
@@ -26,6 +25,7 @@ const Chat = () => {
   const [detectedEmotion, setDetectedEmotion] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { updateStreak } = useStreak();
   const { recordTask } = useTreasureBox();
@@ -37,6 +37,44 @@ const Chat = () => {
   useEffect(() => {
     initializeSession();
   }, []);
+
+  useEffect(() => {
+    // Auto-start conversation if emotion was detected
+    const state = location.state as { detectedEmotion?: string } | null;
+    const detectedEmotion = state?.detectedEmotion;
+    if (detectedEmotion && sessionId && messages.length === 0) {
+      const emotionResponses: Record<string, string> = {
+        sad: "I noticed you're feeling sad. Want to talk about what happened?",
+        anxious: "I'm here with you. What made you feel anxious?",
+        angry: "I hear you. What upset you today?",
+        happy: "That's wonderful! What made you feel so good?",
+        stressed: "I can see you're stressed. Let's work through this together.",
+        disgusted: "I understand. What's bothering you?",
+        surprised: "Something unexpected happened? Tell me more.",
+        neutral: "I'm here to listen. What's on your mind?",
+      };
+      
+      const response = emotionResponses[detectedEmotion] || "I'm here for you. How are you feeling?";
+      const assistantMsg: Message = {
+        role: "assistant",
+        content: response,
+        emotion: detectedEmotion,
+      };
+      
+      setMessages([assistantMsg]);
+      setLastAssistantMessage(response);
+      
+      // Save to database
+      if (sessionId) {
+        supabase.from("chat_messages").insert({
+          session_id: sessionId,
+          role: "assistant",
+          content: response,
+          emotion: detectedEmotion,
+        });
+      }
+    }
+  }, [sessionId, location.state]);
 
   const initializeSession = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -199,24 +237,6 @@ const Chat = () => {
     setInput(text);
   };
 
-  const handleEmotionDetected = (emotion: string, confidence: number) => {
-    setDetectedEmotion(emotion);
-    // Add empathetic context to next message
-    const empathyMap: Record<string, string> = {
-      stressed: "It seems you're feeling stressed. I'm here to help you find calm.",
-      anxious: "You appear anxious. Let's work through this together with some grounding techniques.",
-      sad: "I notice you might be feeling down. I'm here to listen and support you.",
-      angry: "I sense some frustration. Let's talk about what's bothering you.",
-      happy: "It's wonderful to see you're in good spirits!",
-    };
-    
-    const empathyMessage = empathyMap[emotion] || "I'm here for you.";
-    toast({
-      title: "I understand",
-      description: empathyMessage,
-    });
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-calm to-peaceful">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -318,10 +338,6 @@ const Chat = () => {
             <p className="text-xs text-muted-foreground text-center mt-4">
               This is not a substitute for professional mental health care. In crisis, please contact a professional.
             </p>
-          </div>
-          
-          <div>
-            <PhotoEmotionDetector onEmotionDetected={handleEmotionDetected} />
           </div>
         </div>
       </div>

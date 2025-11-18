@@ -15,6 +15,8 @@ import MoodMemories from "./pages/MoodMemories";
 import TreasuresVault from "./pages/TreasuresVault";
 import EmotionVault from "./pages/EmotionVault";
 import EmotionHistory from "./pages/EmotionHistory";
+import EmotionDetect from "./pages/EmotionDetect";
+import VoiceChat from "./pages/VoiceChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +38,8 @@ const App = () => (
           <Route path="/treasures" element={<TreasuresVault />} />
           <Route path="/emotion-vault" element={<EmotionVault />} />
           <Route path="/emotion-history" element={<EmotionHistory />} />
+          <Route path="/emotion-detect" element={<EmotionDetect />} />
+          <Route path="/voice-chat" element={<VoiceChat />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

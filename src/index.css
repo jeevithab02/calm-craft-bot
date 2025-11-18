@@ -127,4 +127,9 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  .font-handwriting {
+    font-family: 'Segoe Script', 'Comic Sans MS', cursive;
+    font-weight: 600;
+  }
 }

@@ -17,7 +17,6 @@ import EmotionVault from "./pages/EmotionVault";
 import EmotionHistory from "./pages/EmotionHistory";
 import EmotionDetect from "./pages/EmotionDetect";
 import VoiceChat from "./pages/VoiceChat";
-import EmotionResponse from "./pages/EmotionResponse";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +41,7 @@ const App = () => (
           <Route path="/emotion-detect" element={<EmotionDetect />} />
           <Route path="/voice-chat" element={<VoiceChat />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/emotion-response" element={<Chat />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

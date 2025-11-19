@@ -119,31 +119,49 @@ const VoiceControls = ({ onTranscript, textToSpeak, isListening = false }: Voice
     }
   };
 
-  const speakText = (text: string) => {
-    if (synthRef.current) {
-      synthRef.current.cancel(); // Cancel any ongoing speech
-      
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.volume = 1;
+  const speakText = (text: string, voiceType: string = 'default') => {
+    if (!synthRef.current) return;
 
-      utterance.onend = () => {
-        setIsSpeaking(false);
-      };
+    // Cancel any ongoing speech
+    synthRef.current.cancel();
 
-      utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event);
-        toast({
-          title: "Speech error",
-          description: "Failed to play audio. Please try again.",
-          variant: "destructive",
-        });
-        setIsSpeaking(false);
-      };
-
-      synthRef.current.speak(utterance);
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Get available voices
+    const voices = synthRef.current.getVoices();
+    
+    // Select voice based on type
+    let selectedVoice = null;
+    if (voiceType === 'soft-female') {
+      selectedVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Victoria'));
+    } else if (voiceType === 'friendly') {
+      selectedVoice = voices.find(v => v.name.includes('Google') && v.lang === 'en-US');
+    } else if (voiceType === 'deep-male') {
+      selectedVoice = voices.find(v => v.name.includes('Male') || v.name.includes('Daniel') || v.name.includes('Alex'));
+    } else if (voiceType === 'calming') {
+      selectedVoice = voices.find(v => v.name.includes('Karen') || v.name.includes('Moira'));
     }
+    
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+    
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = (event) => {
+      console.error('Speech synthesis error:', event);
+      toast({
+        title: "Speech error",
+        description: "Failed to play audio. Please try again.",
+        variant: "destructive",
+      });
+      setIsSpeaking(false);
+    };
+
+    synthRef.current.speak(utterance);
   };
 
   const toggleSpeech = () => {
@@ -180,9 +198,9 @@ const VoiceControls = ({ onTranscript, textToSpeak, isListening = false }: Voice
     <div className="flex items-center gap-2">
       <Button
         onClick={toggleRecording}
-        variant={isRecording ? "destructive" : "outline"}
+        variant={isRecording ? "destructive" : "default"}
         size="icon"
-        className="relative"
+        className={`relative ${!isRecording ? 'bg-gradient-to-r from-lavender to-lavender-bright hover:shadow-lavender-glow border-0' : ''}`}
         title={isRecording ? "Stop recording" : "Start voice input"}
       >
         {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
@@ -198,6 +216,7 @@ const VoiceControls = ({ onTranscript, textToSpeak, isListening = false }: Voice
         onClick={toggleSpeech}
         variant={isSpeaking ? "default" : "outline"}
         size="icon"
+        className={`${isSpeaking ? 'bg-lavender text-white border-lavender' : 'border-lavender/30 hover:bg-lavender/10'}`}
         title={isSpeaking ? "Stop speaking" : "Play response"}
       >
         {isSpeaking ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}

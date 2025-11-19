@@ -6,13 +6,14 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { StreakDisplay } from "@/components/StreakDisplay";
 import { useStreak } from "@/hooks/useStreak";
 import { useEffect } from "react";
+import { SignoraOptionsMenu } from "@/components/SignoraOptionsMenu";
 
 const Index = () => {
   const navigate = useNavigate();
   const { current_streak, longest_streak } = useStreak();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-calm to-peaceful">
+    <div className="min-h-screen bg-gradient-to-br from-background via-lavender-mist to-lavender-light">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
@@ -164,6 +165,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      <SignoraOptionsMenu />
     </div>
   );
 };

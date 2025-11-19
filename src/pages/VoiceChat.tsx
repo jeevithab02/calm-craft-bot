@@ -17,6 +17,8 @@ const VoiceChat = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState<string>("");
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voiceModeEnabled, setVoiceModeEnabled] = useState(true);
+  const [voiceStyle, setVoiceStyle] = useState<"soft" | "friendly" | "energetic">("friendly");
   const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -95,8 +97,10 @@ const VoiceChat = () => {
       const assistantMsg: Message = { role: "assistant", content: assistantContent };
       setMessages(prev => [...prev, assistantMsg]);
 
-      // Auto-speak the response
-      speakText(assistantContent);
+      // Auto-speak the response and follow-up
+      if (voiceModeEnabled) {
+        speakText(assistantContent, true);
+      }
     } catch (error) {
       console.error("Error:", error);
       toast({
@@ -107,14 +111,44 @@ const VoiceChat = () => {
     }
   };
 
-  const speakText = (text: string) => {
+  const speakText = (text: string, addFollowUp = false) => {
+    if (!voiceModeEnabled) return;
+    
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     const voice = availableVoices.find(v => v.name === selectedVoice);
     if (voice) utterance.voice = voice;
     
+    // Adjust voice based on style
+    if (voiceStyle === "soft") {
+      utterance.rate = 0.85;
+      utterance.pitch = 0.9;
+    } else if (voiceStyle === "friendly") {
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+    } else if (voiceStyle === "energetic") {
+      utterance.rate = 1.15;
+      utterance.pitch = 1.1;
+    }
+    
     utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      if (addFollowUp) {
+        setTimeout(() => {
+          const followUps = [
+            "Do you want to talk more about it?",
+            "Should I guide you through calming exercises?",
+            "Would you like more suggestions?",
+            "Can I continue supporting you?"
+          ];
+          const followUp = followUps[Math.floor(Math.random() * followUps.length)];
+          const followUpMsg: Message = { role: "assistant", content: followUp };
+          setMessages(prev => [...prev, followUpMsg]);
+          speakText(followUp, false);
+        }, 1000);
+      }
+    };
     
     window.speechSynthesis.speak(utterance);
   };
@@ -153,7 +187,7 @@ const VoiceChat = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-calm to-peaceful flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-background via-lavender-mist to-lavender-light flex flex-col">
       <div className="container mx-auto px-4 py-6 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-3xl font-bold text-foreground">Voice Chat</h1>
@@ -163,9 +197,38 @@ const VoiceChat = () => {
           </Button>
         </div>
 
-        <div className="flex items-center gap-4 mb-4">
+        <div className="space-y-4 mb-4">
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium text-foreground">Voice Mode:</label>
+            <Button
+              variant={voiceModeEnabled ? "default" : "outline"}
+              size="sm"
+              onClick={() => setVoiceModeEnabled(!voiceModeEnabled)}
+              className={voiceModeEnabled ? "bg-lavender hover:bg-lavender-bright" : ""}
+            >
+              {voiceModeEnabled ? "On" : "Off"}
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-foreground">Voice Style:</label>
+            <div className="flex gap-2">
+              {(["soft", "friendly", "energetic"] as const).map((style) => (
+                <Button
+                  key={style}
+                  variant={voiceStyle === style ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setVoiceStyle(style)}
+                  className={voiceStyle === style ? "bg-lavender hover:bg-lavender-bright" : ""}
+                >
+                  {style.charAt(0).toUpperCase() + style.slice(1)}
+                </Button>
+              ))}
+            </div>
+          </div>
+
           <Select value={selectedVoice} onValueChange={handleVoiceChange}>
-            <SelectTrigger className="w-64">
+            <SelectTrigger className="w-full border-lavender/30">
               <SelectValue placeholder="Select voice" />
             </SelectTrigger>
             <SelectContent>
@@ -210,7 +273,7 @@ const VoiceChat = () => {
             className={`w-20 h-20 rounded-full ${
               isListening
                 ? "bg-destructive hover:bg-destructive/90 animate-pulse"
-                : "bg-gradient-to-br from-primary to-serene hover:shadow-glow"
+                : "bg-gradient-to-br from-lavender to-lavender-bright hover:shadow-lavender-glow"
             } transition-all duration-300`}
           >
             {isListening ? (

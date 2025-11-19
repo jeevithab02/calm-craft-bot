@@ -7,8 +7,8 @@ const EmotionDetect = () => {
   const navigate = useNavigate();
 
   const handleEmotionDetected = (emotion: string, confidence: number) => {
-    // Navigate to chat with detected emotion
-    navigate('/chat', { state: { detectedEmotion: emotion } });
+    // Navigate to emotion response screen first
+    navigate('/emotion-response', { state: { emotion, confidence } });
   };
 
   return (

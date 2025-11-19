@@ -17,6 +17,7 @@ import EmotionVault from "./pages/EmotionVault";
 import EmotionHistory from "./pages/EmotionHistory";
 import EmotionDetect from "./pages/EmotionDetect";
 import VoiceChat from "./pages/VoiceChat";
+import EmotionResponse from "./pages/EmotionResponse";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

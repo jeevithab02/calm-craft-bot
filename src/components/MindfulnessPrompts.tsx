@@ -1,9 +1,16 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, RefreshCw } from "lucide-react";
+import { Brain, Wind, ListChecks, Sparkles, RefreshCw } from "lucide-react";
 
-const MindfulnessPrompts = () => {
+interface MindfulnessPromptsProps {
+  onSelectTool?: (tool: string) => void;
+}
+
+const MindfulnessPrompts = ({ onSelectTool }: MindfulnessPromptsProps) => {
+  // If onSelectTool is provided, show CBT tools. Otherwise show affirmations
+  const isCBTMode = !!onSelectTool;
+
   const prompts = [
     {
       type: "Affirmation",
@@ -51,6 +58,37 @@ const MindfulnessPrompts = () => {
     },
   ];
 
+  const tools = [
+    {
+      id: "thought-reframing",
+      icon: Brain,
+      title: "Thought Reframing",
+      description: "Transform negative thoughts into balanced perspectives",
+      color: "from-lavender to-lavender-bright"
+    },
+    {
+      id: "grounding",
+      icon: ListChecks,
+      title: "5-4-3-2-1 Grounding",
+      description: "Ground yourself in the present moment",
+      color: "from-lavender-mist to-lavender"
+    },
+    {
+      id: "breathing",
+      icon: Wind,
+      title: "Breathing Guide",
+      description: "Calm your mind with guided breathing",
+      color: "from-peaceful to-serene"
+    },
+    {
+      id: "emotion-tracker",
+      icon: Sparkles,
+      title: "Emotion Tracker",
+      description: "Track and understand your emotional patterns",
+      color: "from-calm to-lavender"
+    }
+  ];
+
   const [currentPrompt, setCurrentPrompt] = useState(prompts[0]);
 
   const getRandomPrompt = () => {
@@ -59,28 +97,55 @@ const MindfulnessPrompts = () => {
   };
 
   useEffect(() => {
-    getRandomPrompt();
+    if (!isCBTMode) {
+      getRandomPrompt();
+    }
   }, []);
 
   const typeColors: Record<string, string> = {
-    Affirmation: "from-primary to-serene",
+    Affirmation: "from-lavender to-lavender-bright",
     Grounding: "from-serene to-secondary",
-    Gratitude: "from-secondary to-primary",
-    Reflection: "from-primary/80 to-secondary/80",
+    Gratitude: "from-secondary to-lavender",
+    Reflection: "from-lavender/80 to-lavender-bright/80",
   };
 
+  if (isCBTMode) {
+    // CBT Tools Mode
+    return (
+      <div className="grid grid-cols-2 gap-3 my-4">
+        {tools.map((tool) => {
+          const Icon = tool.icon;
+          return (
+            <Card
+              key={tool.id}
+              className="p-4 hover:shadow-lavender-glow transition-all cursor-pointer border-lavender/20 bg-card/90 backdrop-blur-sm"
+              onClick={() => onSelectTool!(tool.id)}
+            >
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${tool.color} flex items-center justify-center mb-3`}>
+                <Icon className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="font-semibold text-sm text-foreground mb-1">{tool.title}</h3>
+              <p className="text-xs text-muted-foreground">{tool.description}</p>
+            </Card>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Affirmations Mode
   return (
-    <Card className="p-6 border-primary/20 shadow-soft animate-fade-in">
+    <Card className="p-6 border-lavender/20 shadow-lavender-glow animate-fade-in bg-card/90 backdrop-blur-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-primary" />
+          <Sparkles className="w-5 h-5 text-lavender" />
           <h3 className="text-lg font-semibold text-foreground">Daily Mindfulness</h3>
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={getRandomPrompt}
-          className="text-primary hover:text-primary/80"
+          className="text-lavender hover:text-lavender/80"
         >
           <RefreshCw className="w-4 h-4" />
         </Button>

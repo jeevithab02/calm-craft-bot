@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
 import { useTreasureBox } from "@/hooks/useTreasureBox";
 import VoiceControls from "@/components/VoiceControls";
+import MindfulnessPrompts from "@/components/MindfulnessPrompts";
 
 type Message = {
   role: "user" | "assistant";
@@ -23,6 +24,7 @@ const Chat = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [lastAssistantMessage, setLastAssistantMessage] = useState<string>("");
   const [detectedEmotion, setDetectedEmotion] = useState<string | null>(null);
+  const [showTools, setShowTools] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,7 +41,7 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
-    // Handle initial emotion-based greeting
+    // Handle initial emotion-based greeting with music and CBT suggestions
     if (location.state?.detectedEmotion && sessionId && messages.length === 0) {
       const emotion = location.state.detectedEmotion.toLowerCase();
       
@@ -52,16 +54,29 @@ const Chat = () => {
         neutral: "😐",
       };
       
-      const greetings: Record<string, string> = {
-        sad: `${emotionEmojis.sad} I noticed you're feeling sad. Want to talk about what happened?`,
-        anxious: `${emotionEmojis.anxious} I'm here with you. What made you feel anxious?`,
-        angry: `${emotionEmojis.angry} I hear you. What upset you today?`,
-        happy: `${emotionEmojis.happy} That's wonderful! What made you feel so good?`,
-        stressed: `${emotionEmojis.stressed} I noticed you're feeling stressed. Want to tell me what happened?`,
-        neutral: `${emotionEmojis.neutral} Hello! How are you feeling today?`,
+      const musicSuggestions: Record<string, string[]> = {
+        sad: ["Comfort Lofi Mix", "Gentle Piano Melodies", "Uplifting Acoustic"],
+        anxious: ["Calm Waves", "Breathing Space Lofi", "Peaceful Ambient"],
+        angry: ["Cooling Down Mix", "Calm Waters", "Soothing Nature Sounds"],
+        happy: ["Happy Vibes Lofi", "Sunshine Melody", "Upbeat Energy Mix"],
+        stressed: ["Relaxing Piano", "Stress Relief Soundscape", "Calm Down Mix"],
+        neutral: ["Chill Vibes", "Easy Listening", "Background Lofi"],
       };
       
-      const greeting = greetings[emotion] || "Hello! I'm here to listen. How are you feeling?";
+      const cbtTools: Record<string, string> = {
+        sad: "I can help you reframe negative thoughts or guide you through a mood tracking exercise.",
+        anxious: "Would you like to try the 5-4-3-2-1 grounding technique or some breathing exercises?",
+        angry: "Let's work through this together. I can guide you through thought reframing or breathing exercises.",
+        stressed: "I have some tools that might help: breathing guide, thought reframing, or the 5-4-3-2-1 technique.",
+        happy: "That's wonderful! Let's capture this moment in your emotion tracker.",
+        neutral: "I'm here to support you. Would you like to explore some mindfulness exercises?",
+      };
+      
+      const music = musicSuggestions[emotion] || musicSuggestions.neutral;
+      const tool = cbtTools[emotion] || cbtTools.neutral;
+      
+      const greeting = `${emotionEmojis[emotion]} I noticed you seem ${emotion}. Would you like to talk about it?\n\n🎵 Music for you: ${music.join(", ")}\n\n💡 ${tool}`;
+      
       const assistantMsg: Message = { 
         role: "assistant", 
         content: greeting,
@@ -76,6 +91,18 @@ const Chat = () => {
         role: "assistant",
         content: greeting,
         emotion: emotion,
+      });
+      
+      // Store emotion in history
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          supabase.from("mood_tracking").insert({
+            user_id: user.id,
+            emotion: emotion,
+            intensity: 5,
+            notes: `Detected from photo with ${Math.round((location.state.confidence || 0.8) * 100)}% confidence`,
+          });
+        }
       });
     }
   }, [sessionId, location.state]);
@@ -241,6 +268,21 @@ const Chat = () => {
     setInput(text);
   };
 
+  const handleToolSelect = async (toolId: string) => {
+    const toolPrompts: Record<string, string> = {
+      "thought-reframing": "I'd like help reframing a negative thought into a more balanced perspective.",
+      "grounding": "Can you guide me through the 5-4-3-2-1 grounding technique?",
+      "breathing": "I need some breathing exercises to help me calm down.",
+      "emotion-tracker": "I want to track my emotions and understand my patterns better."
+    };
+    
+    const prompt = toolPrompts[toolId];
+    if (prompt) {
+      setInput(prompt);
+      setShowTools(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-lavender-mist to-lavender-light">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -262,7 +304,7 @@ const Chat = () => {
 
         <div className="grid md:grid-cols-3 gap-4 mb-4">
           <div className="md:col-span-2">
-            <Card className="p-6 border-primary/20 shadow-soft">
+            <Card className="p-6 border-lavender/20 shadow-lavender-glow bg-card/95 backdrop-blur-sm">
               <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
             {messages.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
@@ -311,6 +353,16 @@ const Chat = () => {
               </div>
             </Card>
 
+            <Button
+              onClick={() => setShowTools(!showTools)}
+              variant="outline"
+              className="w-full mb-3 border-lavender/30 hover:bg-lavender/10 text-lavender font-semibold"
+            >
+              {showTools ? "Hide" : "Show"} CBT Tools
+            </Button>
+
+            {showTools && <MindfulnessPrompts onSelectTool={handleToolSelect} />}
+
             <div className="flex gap-2 mt-4">
           <Textarea
             value={input}
@@ -322,7 +374,7 @@ const Chat = () => {
               }
             }}
             placeholder="Share what's on your mind..."
-            className="min-h-[80px] resize-none border-primary/20 focus:border-primary"
+            className="min-h-[80px] resize-none border-lavender/20 focus:border-lavender"
             disabled={isLoading}
           />
               <VoiceControls 
@@ -332,7 +384,7 @@ const Chat = () => {
               <Button
                 onClick={sendMessage}
                 disabled={isLoading || !input.trim()}
-                className="bg-gradient-to-r from-primary to-serene hover:shadow-glow"
+                className="bg-gradient-to-r from-lavender to-lavender-bright hover:shadow-lavender-glow"
                 size="lg"
               >
                 <Send className="w-5 h-5" />

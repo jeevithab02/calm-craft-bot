@@ -12,13 +12,13 @@ type PolaroidCardProps = {
 
 export const PolaroidCard = ({ emotion, emoji, note, date, onDelete }: PolaroidCardProps) => {
   return (
-    <Card className="w-64 bg-card border-2 border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:-rotate-1 transform rotate-1 animate-fade-in">
+    <Card className="w-64 bg-card border-2 border-lavender/30 shadow-lavender-glow hover:shadow-lavender-glow-lg transition-all duration-300 hover:-rotate-1 transform rotate-1 animate-fade-in">
       <div className="p-4 space-y-3">
         <div className="bg-muted rounded-lg h-40 flex items-center justify-center text-8xl">
           {emoji}
         </div>
         <div className="space-y-2 pt-2">
-          <h3 className="font-semibold text-lg capitalize text-foreground">{emotion}</h3>
+          <h3 className="font-handwriting font-semibold text-lg capitalize text-lavender">{emotion}</h3>
           {note && (
             <p className="text-sm text-muted-foreground line-clamp-2">{note}</p>
           )}

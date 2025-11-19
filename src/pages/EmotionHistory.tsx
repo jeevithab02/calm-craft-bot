@@ -105,7 +105,7 @@ const EmotionHistory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-calm to-peaceful">
+    <div className="min-h-screen bg-gradient-to-br from-background via-lavender-mist to-lavender-light">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-foreground">Emotion History</h1>

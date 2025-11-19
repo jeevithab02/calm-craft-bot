@@ -42,7 +42,13 @@ All colors MUST be HSL.
     --calm: 190 65% 95%;
     --peaceful: 200 55% 88%;
     --serene: 160 50% 85%;
-    --lavender: 270 60% 85%;
+    
+    /* Lavender colors */
+    --lavender: 270 60% 70%;
+    --lavender-bright: 270 70% 80%;
+    --lavender-mist: 270 50% 95%;
+    --lavender-light: 270 40% 98%;
+    
     --peach: 20 85% 85%;
     --mint: 160 55% 85%;
     --rose: 340 70% 85%;
@@ -54,6 +60,8 @@ All colors MUST be HSL.
     
     --shadow-soft: 0 4px 20px -4px hsl(185 70% 60% / 0.2);
     --shadow-glow: 0 0 40px hsl(280 65% 75% / 0.3);
+    --shadow-lavender-glow: 0 4px 20px rgba(180, 120, 220, 0.3);
+    --shadow-lavender-glow-lg: 0 8px 30px rgba(180, 120, 220, 0.5);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -100,6 +108,12 @@ All colors MUST be HSL.
     --calm: 200 25% 12%;
     --peaceful: 200 25% 15%;
     --serene: 185 45% 25%;
+    
+    /* Lavender colors (dark mode) */
+    --lavender: 270 50% 60%;
+    --lavender-bright: 270 60% 70%;
+    --lavender-mist: 270 30% 20%;
+    --lavender-light: 270 20% 15%;
     
     --gradient-calm: linear-gradient(135deg, hsl(185, 65%, 45%), hsl(190, 60%, 55%));
     --gradient-peaceful: linear-gradient(180deg, hsl(200, 25%, 8%), hsl(200, 25%, 12%));

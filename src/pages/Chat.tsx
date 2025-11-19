@@ -39,40 +39,44 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
-    // Auto-start conversation if emotion was detected
-    const state = location.state as { detectedEmotion?: string } | null;
-    const detectedEmotion = state?.detectedEmotion;
-    if (detectedEmotion && sessionId && messages.length === 0) {
-      const emotionResponses: Record<string, string> = {
-        sad: "I noticed you're feeling sad. Want to talk about what happened?",
-        anxious: "I'm here with you. What made you feel anxious?",
-        angry: "I hear you. What upset you today?",
-        happy: "That's wonderful! What made you feel so good?",
-        stressed: "I can see you're stressed. Let's work through this together.",
-        disgusted: "I understand. What's bothering you?",
-        surprised: "Something unexpected happened? Tell me more.",
-        neutral: "I'm here to listen. What's on your mind?",
+    // Handle initial emotion-based greeting
+    if (location.state?.detectedEmotion && sessionId && messages.length === 0) {
+      const emotion = location.state.detectedEmotion.toLowerCase();
+      
+      const emotionEmojis: Record<string, string> = {
+        sad: "😢",
+        anxious: "😰",
+        angry: "😠",
+        happy: "😊",
+        stressed: "😓",
+        neutral: "😐",
       };
       
-      const response = emotionResponses[detectedEmotion] || "I'm here for you. How are you feeling?";
-      const assistantMsg: Message = {
-        role: "assistant",
-        content: response,
-        emotion: detectedEmotion,
+      const greetings: Record<string, string> = {
+        sad: `${emotionEmojis.sad} I noticed you're feeling sad. Want to talk about what happened?`,
+        anxious: `${emotionEmojis.anxious} I'm here with you. What made you feel anxious?`,
+        angry: `${emotionEmojis.angry} I hear you. What upset you today?`,
+        happy: `${emotionEmojis.happy} That's wonderful! What made you feel so good?`,
+        stressed: `${emotionEmojis.stressed} I noticed you're feeling stressed. Want to tell me what happened?`,
+        neutral: `${emotionEmojis.neutral} Hello! How are you feeling today?`,
       };
       
+      const greeting = greetings[emotion] || "Hello! I'm here to listen. How are you feeling?";
+      const assistantMsg: Message = { 
+        role: "assistant", 
+        content: greeting,
+        emotion: emotion 
+      };
       setMessages([assistantMsg]);
-      setLastAssistantMessage(response);
+      setLastAssistantMessage(greeting);
       
       // Save to database
-      if (sessionId) {
-        supabase.from("chat_messages").insert({
-          session_id: sessionId,
-          role: "assistant",
-          content: response,
-          emotion: detectedEmotion,
-        });
-      }
+      supabase.from("chat_messages").insert({
+        session_id: sessionId,
+        role: "assistant",
+        content: greeting,
+        emotion: emotion,
+      });
     }
   }, [sessionId, location.state]);
 
@@ -238,7 +242,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-calm to-peaceful">
+    <div className="min-h-screen bg-gradient-to-br from-background via-lavender-mist to-lavender-light">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
